@@ -1,0 +1,1180 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogo da Velha-0078</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#0f172a,#1e3a8a);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    color:white;
+    overflow-x:hidden;
+}
+
+body::before{
+    content:"";
+    position:fixed;
+    width:200%;
+    height:200%;
+    background:
+    repeating-radial-gradient(circle,#ffffff10 0 2px,transparent 2px 80px);
+    animation:bg 25s linear infinite;
+}
+
+@keyframes bg{
+    from{
+        transform:translate(0,0);
+    }
+    to{
+        transform:translate(-200px,-200px);
+    }
+}
+
+.container{
+    position:relative;
+    z-index:2;
+    width:100%;
+    max-width:480px;
+    background:#ffffff10;
+    backdrop-filter:blur(12px);
+    border:1px solid #ffffff20;
+    border-radius:28px;
+    padding:25px;
+    box-shadow:0 0 30px rgba(0,0,0,.5);
+}
+
+.title{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.title h1{
+    font-size:32px;
+    font-weight:700;
+}
+
+.title p{
+    opacity:.8;
+    margin-top:5px;
+}
+
+.menu{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+select,
+button,
+input{
+    border:none;
+    border-radius:16px;
+    padding:14px;
+    font-size:15px;
+    font-weight:600;
+}
+
+input,
+select{
+    background:white;
+}
+
+button{
+    background:linear-gradient(45deg,#38bdf8,#2563eb);
+    color:white;
+    cursor:pointer;
+    transition:.25s;
+}
+
+button:hover{
+    transform:scale(1.03);
+}
+
+.stats{
+    margin-top:18px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.card{
+    background:#ffffff12;
+    padding:12px;
+    border-radius:16px;
+    text-align:center;
+}
+
+.card h3{
+    font-size:14px;
+    opacity:.8;
+}
+
+.card span{
+    font-size:24px;
+    font-weight:700;
+}
+
+.game{
+    display:none;
+    margin-top:25px;
+}
+
+.status{
+    text-align:center;
+    font-size:18px;
+    margin-bottom:15px;
+    font-weight:600;
+    min-height:25px;
+}
+
+.board{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+}
+
+.cell{
+    aspect-ratio:1/1;
+    background:#ffffff12;
+    border-radius:20px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:45px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.cell:hover{
+    background:#ffffff25;
+    transform:translateY(-3px);
+}
+
+.x{
+    color:#38bdf8;
+    animation:pop .2s ease;
+}
+
+.o{
+    color:#f43f5e;
+    animation:pop .2s ease;
+}
+
+@keyframes pop{
+    from{
+        transform:scale(.5);
+        opacity:0;
+    }
+    to{
+        transform:scale(1);
+        opacity:1;
+    }
+}
+
+.buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:15px;
+}
+
+.win-screen{
+    position:fixed;
+    inset:0;
+    background:#000000d8;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+.win-box{
+    background:#111827;
+    padding:35px;
+    border-radius:24px;
+    text-align:center;
+    width:90%;
+    max-width:320px;
+}
+
+.win-box h2{
+    margin-bottom:10px;
+    font-size:28px;
+}
+
+.achievement{
+    position:fixed;
+    top:20px;
+    right:-400px;
+    background:#111827;
+    padding:15px 20px;
+    border-left:5px solid #22c55e;
+    border-radius:16px;
+    transition:.5s;
+    z-index:9999;
+}
+
+.achievement.show{
+    right:20px;
+}
+
+.online-panel{
+    margin-top:18px;
+    background:#ffffff10;
+    border-radius:18px;
+    padding:15px;
+}
+
+.online-title{
+    text-align:center;
+    margin-bottom:10px;
+    font-weight:700;
+}
+
+.leaderboard-item{
+    display:flex;
+    justify-content:space-between;
+    background:#ffffff10;
+    padding:10px;
+    border-radius:12px;
+    margin-top:8px;
+}
+
+.online-status{
+    margin-top:10px;
+    text-align:center;
+    opacity:.7;
+    font-size:14px;
+}
+
+@media(max-width:500px){
+
+    .cell{
+        font-size:38px;
+    }
+
+    .title h1{
+        font-size:26px;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="achievement" id="achievement">
+🏆 Conquista desbloqueada!
+</div>
+
+<div class="win-screen" id="winScreen">
+
+    <div class="win-box">
+
+        <h2 id="winTitle">
+        Vitória
+        </h2>
+
+        <p id="winText">
+        Continue jogando
+        </p>
+
+        <button onclick="closeWin()">
+        Continuar
+        </button>
+
+    </div>
+
+</div>
+
+<div class="container">
+
+    <div class="title">
+
+        <h1>Jogo da Velha-0078</h1>
+
+        <p>
+        Multiplayer • Ranking • IA Profissional
+        </p>
+
+    </div>
+
+    <div class="menu">
+
+        <input
+        type="text"
+        id="playerName"
+        placeholder="Digite seu nome">
+
+        <select id="difficulty">
+
+            <option value="easy">
+            Iniciante
+            </option>
+
+            <option value="medium">
+            Intermediário
+            </option>
+
+            <option value="hard">
+            Avançado
+            </option>
+
+        </select>
+
+        <button onclick="startGame()">
+        ▶ Jogar Offline
+        </button>
+
+        <button onclick="toggleOnlineMode()">
+        🌐 Modo Online
+        </button>
+
+    </div>
+
+    <div class="stats">
+
+        <div class="card">
+
+            <h3>Vitórias</h3>
+
+            <span id="wins">
+            0
+            </span>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Ranking</h3>
+
+            <span id="rank">
+            Bronze
+            </span>
+
+        </div>
+
+    </div>
+
+    <div class="game" id="game">
+
+        <div class="status" id="status">
+        Sua vez
+        </div>
+
+        <div class="board">
+
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+
+        </div>
+
+        <div class="buttons">
+
+            <button onclick="restartGame()">
+            🔄 Reiniciar
+            </button>
+
+            <button onclick="toggleMusic()">
+            🎵 Música
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="online-panel">
+
+        <div class="online-title">
+        🏆 Ranking Global
+        </div>
+
+        <div id="leaderboard">
+
+            <div class="leaderboard-item">
+                <span>1. Jogador</span>
+                <span>0 vitórias</span>
+            </div>
+
+        </div>
+
+        <div class="online-status">
+        🟢 Servidor Online
+        </div>
+
+    </div>
+
+</div>
+
+<audio id="music" loop>
+
+<source src="musica.mp3" type="audio/mp3">
+
+</audio>
+
+<script>
+
+/* =========================
+CONFIG
+========================= */
+
+const cells =
+document.querySelectorAll(".cell");
+
+const statusText =
+document.getElementById("status");
+
+const game =
+document.getElementById("game");
+
+const leaderboard =
+document.getElementById("leaderboard");
+
+let board =
+["","","","","","","","",""];
+
+let running = false;
+
+let difficulty = "easy";
+
+let onlineMode = false;
+
+let wins =
+Number(localStorage.getItem("wins"))
+|| 0;
+
+let playerName =
+localStorage.getItem("playerName")
+|| "";
+
+/* =========================
+PLAYER
+========================= */
+
+const nameInput =
+document.getElementById("playerName");
+
+nameInput.value = playerName;
+
+nameInput.addEventListener("input",()=>{
+
+playerName = nameInput.value;
+
+localStorage.setItem(
+"playerName",
+playerName
+);
+
+});
+
+/* =========================
+WIN PATTERNS
+========================= */
+
+const winPatterns = [
+
+[0,1,2],
+[3,4,5],
+[6,7,8],
+
+[0,3,6],
+[1,4,7],
+[2,5,8],
+
+[0,4,8],
+[2,4,6]
+
+];
+
+/* =========================
+START
+========================= */
+
+updateStats();
+
+loadLeaderboard();
+
+function startGame(){
+
+difficulty =
+document.getElementById("difficulty")
+.value;
+
+game.style.display = "block";
+
+restartGame();
+
+}
+
+/* =========================
+ONLINE MODE
+========================= */
+
+function toggleOnlineMode(){
+
+onlineMode = !onlineMode;
+
+if(onlineMode){
+
+achievement(
+"Modo Online Ativado"
+);
+
+}else{
+
+achievement(
+"Modo Offline Ativado"
+);
+
+}
+
+}
+
+/* =========================
+RESTART
+========================= */
+
+function restartGame(){
+
+board =
+["","","","","","","","",""];
+
+running = true;
+
+cells.forEach(cell=>{
+
+cell.textContent = "";
+
+cell.classList.remove("x","o");
+
+});
+
+statusText.textContent =
+"Sua vez";
+
+}
+
+/* =========================
+CLICK
+========================= */
+
+cells.forEach(cell=>{
+
+cell.addEventListener("click",()=>{
+
+const index =
+cell.dataset.index;
+
+if(
+board[index] !== ""
+|| !running
+)return;
+
+playMove(index,"X");
+
+if(checkWinner("X")){
+
+wins++;
+
+localStorage.setItem(
+"wins",
+wins
+);
+
+saveLeaderboard();
+
+updateStats();
+
+victory("Você venceu!");
+
+if(wins === 3){
+
+achievement(
+"Primeiras Vitórias!"
+);
+
+}
+
+return;
+
+}
+
+if(isDraw()){
+
+victory("Empate!");
+
+return;
+
+}
+
+statusText.textContent =
+"IA pensando...";
+
+setTimeout(cpuMove,500);
+
+});
+
+});
+
+/* =========================
+MOVE
+========================= */
+
+function playMove(index,player){
+
+board[index] = player;
+
+cells[index].textContent =
+player;
+
+cells[index].classList.add(
+
+player === "X"
+? "x"
+: "o"
+
+);
+
+}
+
+/* =========================
+CPU
+========================= */
+
+function cpuMove(){
+
+let move;
+
+if(difficulty === "easy"){
+
+move = randomMove();
+
+}else if(
+difficulty === "medium"
+){
+
+move =
+Math.random() < .6
+? smartMove()
+: randomMove();
+
+}else{
+
+move = unbeatableAI();
+
+}
+
+playMove(move,"O");
+
+if(checkWinner("O")){
+
+victory("IA venceu!");
+
+return;
+
+}
+
+if(isDraw()){
+
+victory("Empate!");
+
+return;
+
+}
+
+statusText.textContent =
+"Sua vez";
+
+}
+
+/* =========================
+RANDOM
+========================= */
+
+function randomMove(){
+
+const empty = board
+
+.map((v,i)=>
+
+v==="" ? i : null
+
+)
+
+.filter(v=>v!==null);
+
+return empty[
+Math.floor(
+Math.random()
+* empty.length
+)
+];
+
+}
+
+/* =========================
+SMART AI
+========================= */
+
+function smartMove(){
+
+for(let p of winPatterns){
+
+let [a,b,c] = p;
+
+if(
+board[a]==="O"
+&& board[b]===""
+&& board[c]==="O"
+)return b;
+
+if(
+board[a]===""
+&& board[b]==="O"
+&& board[c]==="O"
+)return a;
+
+if(
+board[a]==="O"
+&& board[b]==="O"
+&& board[c]===""
+)return c;
+
+if(
+board[a]==="X"
+&& board[b]===""
+&& board[c]==="X"
+)return b;
+
+if(
+board[a]===""
+&& board[b]==="X"
+&& board[c]==="X"
+)return a;
+
+if(
+board[a]==="X"
+&& board[b]==="X"
+&& board[c]===""
+)return c;
+
+}
+
+if(board[4]==="")
+return 4;
+
+return randomMove();
+
+}
+
+/* =========================
+MINIMAX
+========================= */
+
+function unbeatableAI(){
+
+let bestScore = -Infinity;
+
+let move;
+
+for(let i=0;i<9;i++){
+
+if(board[i]===""){
+
+board[i] = "O";
+
+let score =
+minimax(board,0,false);
+
+board[i] = "";
+
+if(score > bestScore){
+
+bestScore = score;
+
+move = i;
+
+}
+
+}
+
+}
+
+return move;
+
+}
+
+function minimax(
+board,
+depth,
+isMaximizing
+){
+
+if(checkWinnerMini("O"))
+return 10-depth;
+
+if(checkWinnerMini("X"))
+return depth-10;
+
+if(board.every(c=>c!==""))
+return 0;
+
+if(isMaximizing){
+
+let best = -Infinity;
+
+for(let i=0;i<9;i++){
+
+if(board[i]===""){
+
+board[i]="O";
+
+best = Math.max(
+best,
+minimax(
+board,
+depth+1,
+false
+)
+);
+
+board[i]="";
+
+}
+
+}
+
+return best;
+
+}else{
+
+let best = Infinity;
+
+for(let i=0;i<9;i++){
+
+if(board[i]===""){
+
+board[i]="X";
+
+best = Math.min(
+best,
+minimax(
+board,
+depth+1,
+true
+)
+);
+
+board[i]="";
+
+}
+
+}
+
+return best;
+
+}
+
+}
+
+/* =========================
+CHECK
+========================= */
+
+function checkWinner(player){
+
+return winPatterns.some(
+
+pattern=>{
+
+return pattern.every(
+
+index=>
+
+board[index]===player
+
+);
+
+}
+
+);
+
+}
+
+function checkWinnerMini(player){
+
+return winPatterns.some(
+
+pattern=>{
+
+return pattern.every(
+
+index=>
+
+board[index]===player
+
+);
+
+}
+
+);
+
+}
+
+function isDraw(){
+
+return board.every(
+c=>c!==""
+);
+
+}
+
+/* =========================
+VICTORY
+========================= */
+
+function victory(text){
+
+running = false;
+
+document.getElementById(
+"winScreen"
+).style.display = "flex";
+
+document.getElementById(
+"winTitle"
+).innerText = text;
+
+}
+
+/* =========================
+CLOSE
+========================= */
+
+function closeWin(){
+
+document.getElementById(
+"winScreen"
+).style.display = "none";
+
+restartGame();
+
+}
+
+/* =========================
+RANK
+========================= */
+
+function updateStats(){
+
+document.getElementById(
+"wins"
+).innerText = wins;
+
+let rank = "Bronze";
+
+if(wins >= 5)
+rank = "Prata";
+
+if(wins >= 10)
+rank = "Ouro";
+
+if(wins >= 20)
+rank = "Diamante";
+
+document.getElementById(
+"rank"
+).innerText = rank;
+
+}
+
+/* =========================
+ACHIEVEMENT
+========================= */
+
+function achievement(text){
+
+const a =
+document.getElementById(
+"achievement"
+);
+
+a.innerHTML =
+"🏆 " + text;
+
+a.classList.add("show");
+
+setTimeout(()=>{
+
+a.classList.remove(
+"show"
+);
+
+},3000);
+
+}
+
+/* =========================
+MUSIC
+========================= */
+
+function toggleMusic(){
+
+const music =
+document.getElementById(
+"music"
+);
+
+if(music.paused){
+
+music.play();
+
+}else{
+
+music.pause();
+
+}
+
+}
+
+/* =========================
+ONLINE LEADERBOARD
+SIMULADO
+========================= */
+
+function saveLeaderboard(){
+
+if(!playerName){
+
+playerName = "Player";
+
+}
+
+let players = JSON.parse(
+
+localStorage.getItem(
+"leaderboard"
+)
+
+) || [];
+
+const existing =
+players.find(
+
+p=>p.name===playerName
+
+);
+
+if(existing){
+
+existing.wins = wins;
+
+}else{
+
+players.push({
+
+name:playerName,
+wins:wins
+
+});
+
+}
+
+players.sort(
+(a,b)=>b.wins-a.wins
+);
+
+localStorage.setItem(
+
+"leaderboard",
+
+JSON.stringify(players)
+
+);
+
+loadLeaderboard();
+
+}
+
+function loadLeaderboard(){
+
+let players = JSON.parse(
+
+localStorage.getItem(
+"leaderboard"
+)
+
+) || [];
+
+players.sort(
+(a,b)=>b.wins-a.wins
+);
+
+leaderboard.innerHTML = "";
+
+players.slice(0,10)
+
+.forEach((player,index)=>{
+
+leaderboard.innerHTML += `
+
+<div class="leaderboard-item">
+
+<span>
+${index+1}.
+${player.name}
+</span>
+
+<span>
+${player.wins}
+vitórias
+</span>
+
+</div>
+
+`;
+
+});
+
+}
+
+/* =========================
+INIT
+========================= */
+
+saveLeaderboard();
+
+</script>
+
+</body>
+</html>
+```
